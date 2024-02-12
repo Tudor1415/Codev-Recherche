@@ -1,0 +1,26 @@
+# Ignore all TeX-related files
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+*.gz
+*.blg
+*.bbl
+*.dvi
+*.run.xml
+*.bcf
+*.lof
+*.lot
+*.fls
+*.gz
+*.xdv
+*.nav
+*.snm
+*.vrb
+*.synctex(busy)
+*.fdb_latexmk
+*.xdv
+

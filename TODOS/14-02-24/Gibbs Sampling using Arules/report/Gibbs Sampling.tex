@@ -1,0 +1,66 @@
+\documentclass{article}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{amsmath}
+\usepackage{algorithmicx}
+\usepackage{listings}
+\usepackage{xcolor}
+
+% Define custom colors
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\definecolor{forestgreen}{rgb}{0.13, 0.55, 0.13}
+
+% Define custom R style
+\lstdefinestyle{customR}{
+    language=R,
+    basicstyle=\small\ttfamily,
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    numbers=left,
+    stepnumber=1,
+    numbersep=5pt,
+    backgroundcolor=\color{backcolour},
+    frame=single,
+    rulecolor=\color{black},
+    breaklines=true,
+    breakatwhitespace=true,
+    tabsize=2,
+}
+
+\lstset{style=customR}
+
+\begin{document}
+
+\begin{algorithm}
+\section{Gibbs Sampling in R}
+
+\lstinputlisting[language=R, caption={Gibbs Sampling Function in R}, label=lst:gibbs-sampling]{../gibbs.r}
+
+\caption{Gibbs Sampling}
+\begin{algorithmic}[1]
+\Function{GibbsSampling}{data, itts, $\xi$, g}
+    \State $data\_size \gets \text{length of vectors}$
+    \State $J \gets$ random initialisation
+    \State $sample \gets$ new Array
+
+    \For{$\text{itt} \gets 1$ to $\text{itts}$}
+        \For{$i \gets 1$ to $data\_size - 1$}
+            \State J gets added to the sample
+            \State $J[i] \gets 1$
+            \State $p_C(J_s=1, J_{-s}) \gets \exp(\xi \cdot g(J))$
+            \State $J[i] \gets 0$
+            \State $p_C(J_s=1 \mid J_{-s}) \gets \frac{p_C(J_s=1, J_{-s})}{\underbrace{\exp(\xi \cdot g(J))}_{=p_C(J_s=0, J_{-s})} + p_C(J_s=1, J_{-s})}$
+            \State $J[i] \gets \mathcal{B}(p_C(J_s=1 \mid J_{-s}))$
+        \EndFor
+    \EndFor
+
+    \State \Return $sample$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\end{document}
