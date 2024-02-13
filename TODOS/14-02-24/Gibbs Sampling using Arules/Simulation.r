@@ -60,16 +60,14 @@ gibbs_sampling <- function(transactions, iterations, csi, g_function) {
    J_NC = sample(0:1, size = 1, replace = TRUE)
   )
   
-  # List to store the sample of binary vectors 
-  sample_list <- list()
+  # Dataframe to store the sample of binary vectors 
+  sample_df <- data.frame(matrix(nrow = iterations, ncol = 5))
+  colnames(sample_df) <- colnames(J)
   
   # Perform Gibbs sampling for the specified number of iterations
   for (iteration in 1:iterations) {
     # Iterate over each element in the binary vector J
-    for (i in 1:(no_items - 1)) {
-      # Append the current state of the binary vector to the sample
-      sample_list[[length(sample_list) + 1]] <- J
-      
+    for (i in 1:4) {      
       # Toggle the i-th element and calculate the probability
       J[i] <- 1
       probability <- exp(csi * g_function(J, transactions))
@@ -79,11 +77,15 @@ gibbs_sampling <- function(transactions, iterations, csi, g_function) {
       # Generate a random sample from a Bernoulli distribution with the calculated probability
       J[i] <- rbinom(1, 1, probability)
     }
+    J[5] = 1- J[4]
+    # Add the current state of the binary vector to the sample
+    sample_df[iteration, ] <- as.vector(J)
   }
-  
-  # Return the sample of binary vectors 
-  return(sample_list)
+
+  return(sample_df)
 }
 
 # Run Gibbs sampling
-result <- gibbs_sampling(transactions, 10, 3, g_function)
+sample_df <- gibbs_sampling(transactions, 10, 3, g_function)
+sample_transactions <- as(sample_df, "transactions")
+inspect(sample_transactions)
