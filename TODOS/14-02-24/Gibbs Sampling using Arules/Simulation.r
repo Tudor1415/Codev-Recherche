@@ -32,6 +32,7 @@ rules <- apriori(transactions ,
                  parameter = list(supp = 0, conf = 0.8, target = "rules"),
                  appearance = list(rhs = c("J_C", "J_NC"), lhs = c("J_1", "J_2", "J_3")))
 
+
 # Define g_function as the product of support and confidence
 g_function <- function(J, transactions) {
   J_transaction <- as(as.matrix(J), "transactions")
@@ -55,7 +56,7 @@ gibbs_sampling <- function(transactions, iterations, csi, g_function) {
    J_1 = sample(0:1, size = 1, replace = TRUE),
    J_2 = sample(0:1, size = 1, replace = TRUE),
    J_3 = sample(0:1, size = 1, replace = TRUE),
-   J_C = sample(0:1, size = 1, replace = TRUE)
+   J_C = 1
   )
   
   J$J_NC <- 1 - J$J_C
@@ -67,7 +68,7 @@ gibbs_sampling <- function(transactions, iterations, csi, g_function) {
   # Perform Gibbs sampling for the specified number of iterations
   for (iteration in 1:iterations) {
     # Iterate over each element in the binary vector J
-    for (i in 1:4) {      
+    for (i in 1:3) {      
       # Toggle the i-th element and calculate the probability
       J[i] <- 1
       probability <- exp(csi * g_function(J, transactions))
@@ -77,7 +78,7 @@ gibbs_sampling <- function(transactions, iterations, csi, g_function) {
       # Generate a random sample from a Bernoulli distribution with the calculated probability
       J[i] <- rbinom(1, 1, probability)
     }
-    J[5] = 1- J[4]
+
     if (!all(J[1:3] == 0)) {
     	# Add the current state of the binary vector to the sample
       sample_df[iteration, ] <- as.vector(J)
@@ -94,8 +95,8 @@ gibbs_sampling <- function(transactions, iterations, csi, g_function) {
 sample_df <- gibbs_sampling(transactions, 20, 3, g_function)
 sample_transactions <- as(as.matrix(sample_df), "transactions")
 
-sample_rules <- apriori(sample_transactions, 
-                 parameter = list(supp = 0, conf = 0.8, target = "rules"),
+sample_ruinles <- apriori(sample_transactions, 
+                 parameter = list(supp = 0, conf = 0.5, target = "rules"),
                  appearance = list(rhs = c("J_C", "J_NC"), lhs = c("J_1", "J_2", "J_3")))
 inspect(rules)
-inspect(sample_rules)
+inspect(head(sample_rules, 4))
