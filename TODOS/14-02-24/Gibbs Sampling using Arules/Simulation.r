@@ -31,7 +31,6 @@ inspect(transactions)
 rules <- apriori(transactions , 
                  parameter = list(supp = 0, conf = 0.8, target = "rules"),
                  appearance = list(rhs = c("J_C", "J_NC"), lhs = c("J_1", "J_2", "J_3")))
-inspect(rules)
 
 # Define g_function as the product of support and confidence
 g_function <- function(J, transactions) {
@@ -56,10 +55,11 @@ gibbs_sampling <- function(transactions, iterations, csi, g_function) {
    J_1 = sample(0:1, size = 1, replace = TRUE),
    J_2 = sample(0:1, size = 1, replace = TRUE),
    J_3 = sample(0:1, size = 1, replace = TRUE),
-   J_C = sample(0:1, size = 1, replace = TRUE),
-   J_NC = sample(0:1, size = 1, replace = TRUE)
+   J_C = sample(0:1, size = 1, replace = TRUE)
   )
   
+  J$J_NC <- 1 - J$J_C
+
   # Dataframe to store the sample of binary vectors 
   sample_df <- data.frame(matrix(nrow = iterations, ncol = 5))
   colnames(sample_df) <- colnames(J)
@@ -78,18 +78,24 @@ gibbs_sampling <- function(transactions, iterations, csi, g_function) {
       J[i] <- rbinom(1, 1, probability)
     }
     J[5] = 1- J[4]
-    if (all(J[1:3] == 0)) {
-      i <- i - 1
-    } else {
+    if (!all(J[1:3] == 0)) {
     	# Add the current state of the binary vector to the sample
       sample_df[iteration, ] <- as.vector(J)
-    }
+    } 
   }
+
+  # Drop rows with NA values
+  sample_df <- na.omit(sample_df)
 
   return(sample_df)
 }
 
 # Run Gibbs sampling
-sample_df <- gibbs_sampling(transactions, 10, 3, g_function)
+sample_df <- gibbs_sampling(transactions, 20, 3, g_function)
 sample_transactions <- as(as.matrix(sample_df), "transactions")
-inspect(sample_transactions)
+
+sample_rules <- apriori(sample_transactions, 
+                 parameter = list(supp = 0, conf = 0.8, target = "rules"),
+                 appearance = list(rhs = c("J_C", "J_NC"), lhs = c("J_1", "J_2", "J_3")))
+inspect(rules)
+inspect(sample_rules)
