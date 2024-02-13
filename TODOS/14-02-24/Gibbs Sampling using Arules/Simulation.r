@@ -27,7 +27,6 @@ J_data <- data.frame(J_1, J_2, J_3, J_C, J_NC)
 transactions <- as(as.matrix(J_data), "transactions")
 inspect(transactions)
 
-# Assuming 'transactions' is your transaction data
 rules <- apriori(transactions , 
                  parameter = list(supp = 0, conf = 0.8, target = "rules"),
                  appearance = list(rhs = c("J_C", "J_NC"), lhs = c("J_1", "J_2", "J_3")))
@@ -79,10 +78,8 @@ gibbs_sampling <- function(transactions, iterations, csi, g_function) {
       J[i] <- rbinom(1, 1, probability)
     }
 
-    if (!all(J[1:3] == 0)) {
-    	# Add the current state of the binary vector to the sample
-      sample_df[iteration, ] <- as.vector(J)
-    } 
+    sample_df[iteration, ] <- as.vector(J)
+ 
   }
 
   # Drop rows with NA values
@@ -110,3 +107,34 @@ sample_rules <- sample_rules[order(sample_rules$g, decreasing = TRUE), ]
 
 head(sample_rules)
 inspect(rules)
+
+# Application to the iris dataset
+data(iris)
+
+irisDisc <- discretizeDF(iris)
+head(irisDisc)
+transIris <- as(irisDisc, "transactions")
+inspect(head(transIris))
+
+rules <- apriori(transIris , 
+                 parameter = list(supp = 0, conf = 0.8, target = "rules"))
+
+# Run Gibbs sampling
+sample_df <- gibbs_sampling(transIris, 40, 3, g_function)
+sample_rules <- as(as.matrix(sample_df), "transactions")
+sample_antecedents <- as(as.matrix(sample_df[, 1:3]), "transactions")
+
+rule_supp <- support(sample_rules, transactions)
+ant_supp <- support(sample_antecedents, transactions)
+conf <- rule_supp / ant_supp
+g <- rule_supp * conf
+
+sample_df$supp <- rule_supp
+sample_df$conf <- conf
+sample_df$g <- g
+
+sample_rules <- unique(sample_df)
+sample_rules <- sample_rules[order(sample_rules$g, decreasing = TRUE), ]
+
+head(sample_rules)
+head(inspect(rules), 3)
