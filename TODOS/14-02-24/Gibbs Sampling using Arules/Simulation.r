@@ -92,11 +92,21 @@ gibbs_sampling <- function(transactions, iterations, csi, g_function) {
 }
 
 # Run Gibbs sampling
-sample_df <- gibbs_sampling(transactions, 20, 3, g_function)
-sample_transactions <- as(as.matrix(sample_df), "transactions")
+sample_df <- gibbs_sampling(transactions, 40, 3, g_function)
+sample_rules <- as(as.matrix(sample_df), "transactions")
+sample_antecedents <- as(as.matrix(sample_df[, 1:3]), "transactions")
 
-sample_ruinles <- apriori(sample_transactions, 
-                 parameter = list(supp = 0, conf = 0.5, target = "rules"),
-                 appearance = list(rhs = c("J_C", "J_NC"), lhs = c("J_1", "J_2", "J_3")))
+rule_supp <- support(sample_rules, transactions)
+ant_supp <- support(sample_antecedents, transactions)
+conf <- rule_supp / ant_supp
+g <- rule_supp * conf
+
+sample_df$supp <- rule_supp
+sample_df$conf <- conf
+sample_df$g <- g
+
+sample_rules <- unique(sample_df)
+sample_rules <- sample_rules[order(sample_rules$g, decreasing = TRUE), ]
+
+head(sample_rules)
 inspect(rules)
-inspect(head(sample_rules, 4))
