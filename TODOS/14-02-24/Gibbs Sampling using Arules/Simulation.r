@@ -78,8 +78,12 @@ gibbs_sampling <- function(transactions, iterations, csi, g_function) {
       J[i] <- rbinom(1, 1, probability)
     }
     J[5] = 1- J[4]
-    # Add the current state of the binary vector to the sample
-    sample_df[iteration, ] <- as.vector(J)
+    if (all(J[1:3] == 0)) {
+      i <- i - 1
+    } else {
+    	# Add the current state of the binary vector to the sample
+      sample_df[iteration, ] <- as.vector(J)
+    }
   }
 
   return(sample_df)
@@ -87,5 +91,5 @@ gibbs_sampling <- function(transactions, iterations, csi, g_function) {
 
 # Run Gibbs sampling
 sample_df <- gibbs_sampling(transactions, 10, 3, g_function)
-sample_transactions <- as(sample_df, "transactions")
+sample_transactions <- as(as.matrix(sample_df), "transactions")
 inspect(sample_transactions)
