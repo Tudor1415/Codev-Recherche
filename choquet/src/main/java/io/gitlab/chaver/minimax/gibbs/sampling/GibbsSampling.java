@@ -1,7 +1,12 @@
 package io.gitlab.chaver.minimax.gibbs.sampling;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import io.gitlab.chaver.minimax.gibbs.rules.BinaryRule;
 
@@ -37,26 +42,23 @@ public class GibbsSampling {
         return sample;
     }
 
-    public GibbsSampling(int[][] transactions, int nbItems) {
+    public GibbsSampling(int[][] transactions, int nbItems, int[] consequent) {
         this.transactions = transactions;
 
         this.nbItems = nbItems;
 
-        initializeSample();
+        initializeSample(consequent);
     }
 
-    private void initializeSample() {
+    private void initializeSample(int[] Y) {
         // Initialize the first sample randomly
         int[] X = new int[nbItems];
-        int[] Y = new int[] { 0 };
 
         Random random = new Random();
         for (int i = 0; i < nbItems; i++) {
             X[i] = (int) random.nextInt(2);
         }
 
-        // Setting the class to 0
-        Y[0] = 0;
         J = new BinaryRule(X, Y, this.transactions);
     }
 
@@ -72,17 +74,16 @@ public class GibbsSampling {
 
         return 0;
     }
-
+    
     public void sample(int nbIterations) {
-        // Mock sample
-        BinaryRule[] mockSample = new BinaryRule[nbIterations];
-        mockSample[0] = this.J;
+        // Mock sample as a Set
+        Set<BinaryRule> SampleSet = new HashSet<>();
+        SampleSet.add(this.J);
 
         double probability;
 
         for (int itt = 1; itt < nbIterations; itt++) {
-            int[] X = Arrays.copyOf(mockSample[itt - 1].getX(), mockSample[itt - 1].getX().length); // Create a deep
-                                                                                                    // copy of J.getX()
+            int[] X = Arrays.copyOf(SampleSet.iterator().next().getX(), nbItems); // Assuming nbItems is the length of J.getX()
 
             for (int item_no = 0; item_no < nbItems; item_no++) {
                 X[item_no] = 1;
@@ -97,25 +98,27 @@ public class GibbsSampling {
             }
 
             BinaryRule sampledRule = new BinaryRule(Arrays.copyOf(X, X.length), J.getY(), this.transactions);
-            mockSample[itt] = sampledRule;
+            if(sampledRule.getSupport() > 0.0) {
+                SampleSet.add(sampledRule);
+            }
         }
 
-        // Filter out rules with support 0 from the mock sample to create the real
-        // sample
-        BinaryRule[] filteredSample = Arrays.stream(mockSample)
-                .filter(rule -> rule.getSupport() > 0)
-                .toArray(BinaryRule[]::new);
+        SampleSet.remove(this.J);
 
-        this.sample = filteredSample;
+        // Sort the SampleSet using g_function values (product of support and confidence)
+        Set<BinaryRule> sortedSampleSet = SampleSet.stream()
+                .sorted(Comparator.comparingDouble(rule -> - rule.getSupport() * rule.getConfidence()))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
+        this.sample = sortedSampleSet.toArray(new BinaryRule[0]);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(String.format("%-45s%-10s%-10s%n", "Rule", "Support", "Confidence"));
-        sb.append(String.format("%-45s%-10s%-10s%n", "----", "-------", "----------"));
+        sb.append(String.format("%-55s%-10s%-10s%n", "Rule", "Support", "Confidence"));
+        sb.append(String.format("%-55s%-10s%-10s%n", "----", "-------", "----------"));
 
         // Print each rule in the sample
         for (BinaryRule rule : this.sample) {
@@ -125,7 +128,7 @@ public class GibbsSampling {
             double support = rule.getSupport();
             double confidence = rule.getConfidence();
 
-            sb.append(String.format("%-45s%-10.4f%-10.4f%n", Arrays.toString(X) + " => " + Arrays.toString(Y), support,
+            sb.append(String.format("%-55s%-10.4f%-10.4f%n", Arrays.toString(X) + " => " + Arrays.toString(Y), support,
                     confidence));
         }
 

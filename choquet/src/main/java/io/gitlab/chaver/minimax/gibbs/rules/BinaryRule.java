@@ -123,4 +123,20 @@ public class BinaryRule implements IRule  {
         sb.append(Arrays.toString(x)).append(" => ").append(Arrays.toString(y));
         return sb.toString();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BinaryRule that = (BinaryRule) o;
+        return Arrays.equals(getX(), that.getX()) &&
+                Arrays.equals(getY(), that.getY());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Arrays.hashCode(getX());
+        result = 31 * result + Arrays.hashCode(getY());
+        return result;
+    }
 }

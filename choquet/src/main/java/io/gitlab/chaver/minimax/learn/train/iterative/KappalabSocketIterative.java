@@ -33,10 +33,14 @@ public class KappalabSocketIterative extends IterativeRankingLearn {
     public KappalabSocketIterative(int nbIterations, RankingsProvider rankingsProvider, IScoreFunction<IAlternative> func,
                                    int nbMeasures) {
         super(nbIterations, rankingsProvider, func, nbMeasures);
+        // System.out.println("Algorithm Initialized");
+
     }
 
     @Override
     public FunctionParameters learn(List<Ranking<IAlternative>> rankings) throws Exception {
+        //System.out.println("Satring Learnig");
+        
         KappalabInput2 input = new KappalabInput2();
         for (Ranking<IAlternative> ranking : rankings) {
             addRankingToKappalabInput(ranking, input, delta);

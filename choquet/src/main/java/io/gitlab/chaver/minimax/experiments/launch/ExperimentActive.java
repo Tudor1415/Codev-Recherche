@@ -74,10 +74,9 @@ public class ExperimentActive {
                                                                IScoreFunction<IAlternative> initial) {
         BaselineIterative baseline = new BaselineIterative(nbIterations, getRankingsProvider(trainingAlternatives, oracle, initial), initial, nbCriteria);
         AHPIterative ahp = new AHPIterative(nbIterations, getRankingsProvider(trainingAlternatives, oracle, initial), initial, nbCriteria);
-        SVMIterative svm = new SVMIterative(nbIterations, getRankingsProvider(trainingAlternatives, oracle, initial), initial, nbCriteria);
         KappalabSocketIterative kappalab = new KappalabSocketIterative(nbIterations, getRankingsProvider(trainingAlternatives, oracle, initial), initial, nbCriteria);
         //GLSCplexIterative kappalab = new GLSCplexIterative(nbIterations, getRankingsProvider(trainingAlternatives, oracle, initial), initial, nbCriteria);
-        List<AbstractRankingLearning> algorithms = Arrays.asList(baseline, ahp, svm, kappalab);
+        List<AbstractRankingLearning> algorithms = Arrays.asList(baseline, ahp,  kappalab);
         //List<AbstractRankingLearning> algorithms = Arrays.asList(kappalab);
         for (AbstractRankingLearning algo : algorithms) {
             algo.setTimeLimit(timeLimit);

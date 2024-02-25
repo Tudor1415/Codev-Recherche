@@ -33,10 +33,10 @@ public class KappalabTest {
     private String learnDirectory = expDirectory + "learn/";
     private String rulesDirectory = "results/rules/";
     private int nbIterations = 100;
-    private int k = 5;
-    private String[] measureNames = { yuleQ, cosine, kruskal, addedValue, certainty };
+    private int k = 1;
+    private String[] measureNames = { support, confidence };
     private int nbCriteria = measureNames.length;
-    private double smoothCounts = 0.1d;
+    private double smoothCounts = 0.3d;
     private int timeLimit = 3600;
     private Gson gson = new Gson();
 
@@ -55,7 +55,7 @@ public class KappalabTest {
     }
 
     private List<String> getOracleNames() {
-        return Arrays.asList("linear", "owa", "choquet", "chiSquared", "gini", "lexmin", "Ggini");
+        return Arrays.asList("linear");
     }
 
     private List<Comparator<IAlternative>> getOracles(List<IAlternative> trainingAlt,
@@ -149,10 +149,10 @@ public class KappalabTest {
 
         int[][] transactions = readDataset(getDatasetPath(dataset));
 
-        int numIterations = 10000;
+        int numIterations = 50000;
         int nbItems = 12;
 
-        SoftmaxTemp softmaxTemp = new SoftmaxTemp(transactions, nbItems, "prod", 3);
+        SoftmaxTemp softmaxTemp = new SoftmaxTemp(transactions, nbItems, "prod", 6, new int[]{0, 0, 1});
         softmaxTemp.sample(numIterations);
 
         BinaryRule[] sampleArray = softmaxTemp.getSample();
@@ -160,6 +160,7 @@ public class KappalabTest {
         List<IRule> rules = Arrays.asList(sampleArray);
 
         System.out.println(softmaxTemp.toString());
+        System.out.println("Rules Length: " + rules.size());
 
         // Computation of the alternatives for the oracle
         List<IAlternative> alternatives = computeAlternatives(rules, measureNames, nbTransactions, smoothCounts);

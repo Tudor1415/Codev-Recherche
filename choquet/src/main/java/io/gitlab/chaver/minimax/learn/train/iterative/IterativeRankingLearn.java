@@ -34,9 +34,12 @@ public abstract class IterativeRankingLearn extends AbstractRankingLearning impl
     public FunctionParameters learn() throws Exception {
         FunctionParameters params = new FunctionParameters();
         params.setNbIterations(nbIterations);
+        System.out.println("Satring Learnig for " + nbIterations + " itterations");
         for (int i = 0; i < nbIterations; i++) {
             double timeToLearn = params.getTimeToLearn();
-            params = learn(rankingsProvider.provideRankings(this));
+            List<Ranking<IAlternative>> rankings = rankingsProvider.provideRankings(this);
+            System.out.println("Got the rankings");
+            params = learn(rankings);
             params.setTimeToLearn(timeToLearn + params.getTimeToLearn());
             if (params.getErrorMessages() != null) {
                 params.setNbIterations(i+1);

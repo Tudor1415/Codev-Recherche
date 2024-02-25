@@ -2,7 +2,7 @@ source("scripts/kappalab_func.R")
 
 server <- function() {
   while(TRUE){
-    # writeLines("Listening...")
+    writeLines("Listening...")
     con <- socketConnection(host="localhost", port = 6011, blocking=TRUE,
                             server=TRUE, open="r+", timeout = 3600)
     input <- fromJSON(readLines(con, 1))
