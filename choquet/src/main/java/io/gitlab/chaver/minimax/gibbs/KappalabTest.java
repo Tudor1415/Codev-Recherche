@@ -195,7 +195,7 @@ public class KappalabTest {
                             getRankingMetrics(testAlternatives.get(i).size()), refRanking,
                             getRankingMetricLabels(testAlternatives.get(i).size()));
                     algorithm.addObserver(dashboard);
-                    FunctionParameters func = algorithm.learn();
+                    FunctionPar ameters func = algorithm.learn();
                     ResultExpActive res = new ResultExpActive();
                     res.setMetricValues(dashboard.getMetricValues());
                     res.setOracle(oracleName);
