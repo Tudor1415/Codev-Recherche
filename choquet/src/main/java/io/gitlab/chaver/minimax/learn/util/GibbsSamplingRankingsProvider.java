@@ -1,5 +1,7 @@
 package io.gitlab.chaver.minimax.learn.util;
 
+import static io.gitlab.chaver.minimax.learn.train.LearnUtil.computeRankingWithOracle;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -37,6 +39,8 @@ public class GibbsSamplingRankingsProvider implements RankingsProvider{
     int nbTransactions;
     double smoothCounts;
 
+    private List<Ranking<IAlternative>> rankings = new ArrayList<>();
+
     public GibbsSamplingRankingsProvider(Comparator<IAlternative> oracle,
                                         IScoreFunction<IAlternative> func, 
                                         double temp, int[][] transactions, 
@@ -53,20 +57,6 @@ public class GibbsSamplingRankingsProvider implements RankingsProvider{
 
         this.measureNames = measureNames;
         this.smoothCounts = smoothCounts;
-    }
-
-	private BinaryRule initializeSample(int consequent) {
-        // Initialize the first sample randomly
-        int[] X = new int[this.nbItems];
-        int[] Y = new int[]{0};
-        
-        Random random = new Random();
-        for (int i = 0; i < this.nbItems; i++) {
-            X[i] = (int) random.nextInt(2);
-        }
-        
-        Y[0] = consequent;
-        return new BinaryRule(X, Y, this.transactions);
     }
 
 	public double importance_function(IAlternative J) {
@@ -191,6 +181,10 @@ public class GibbsSamplingRankingsProvider implements RankingsProvider{
                 .limit(2)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
+
+        List<IAlternative> selected = Arrays.asList(topTwoAlternatives.get(0), topTwoAlternatives.get(1));
+        rankings.add(computeRankingWithOracle(oracle, selected));
+        return rankings;
     }
     
 }
